@@ -23,7 +23,6 @@ class _FacultyLedgerState extends State<FacultyLedger> with SingleTickerProvider
   late final AnimationController _ringSpinController;
   Timer? _timer;
   int _index = 0;
-  double _displayedScore = 0;
 
   @override
   void initState() {
@@ -31,7 +30,6 @@ class _FacultyLedgerState extends State<FacultyLedger> with SingleTickerProvider
     _pool = _buildPool()..shuffle();
     _ringSpinController = AnimationController(vsync: this, duration: const Duration(seconds: 5))..repeat();
     if (_pool.isNotEmpty) {
-      _displayedScore = _pool[0].overall;
       _timer = Timer.periodic(_kCycleDuration, (_) => _advance());
     }
   }
@@ -46,7 +44,6 @@ class _FacultyLedgerState extends State<FacultyLedger> with SingleTickerProvider
   void _advance() {
     setState(() {
       _index = (_index + 1) % _pool.length;
-      _displayedScore = _pool[_index].overall;
     });
   }
 

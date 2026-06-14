@@ -11,6 +11,15 @@ flutter run
 
 That's it. The app boots into the bottom-nav shell at `/home`.
 
+## Android
+
+The `android/` project is generated and ready to open in Android Studio
+(File → Open → select the repo root, or the `android/` folder directly).
+The application ID is currently `com.felipejmiranda.eceuh` — change it in
+`android/app/build.gradle.kts` (`namespace` / `applicationId`) and the
+package in `android/app/src/main/kotlin/.../MainActivity.kt` before
+publishing under a different identity.
+
 ## Project layout
 
 ```
@@ -84,6 +93,7 @@ Supabase is left commented in `pubspec.yaml`. To re-enable:
 ## What still needs polish
 
 - Bundle the three fonts (Lora / Inter / JetBrains Mono) into `assets/fonts/` and uncomment the `fonts:` block in `pubspec.yaml`. Until then the system fonts are used.
-- App icons and splash: run `flutter pub run flutter_launcher_icons` and `flutter_native_splash` once you've added launcher assets.
+- `assets/images/` and `assets/icons/` exist but are empty placeholders — drop real files in before referencing them from `pubspec.yaml`'s asset list.
+- App icons and splash: add a source icon and run `flutter pub run flutter_launcher_icons` / `flutter_native_splash` to replace the default Flutter icon generated under `android/app/src/main/res/mipmap-*`.
 - The Faculty Ledger animation is faithful but feel free to tune `_kCycleDuration` in `widgets/faculty_ledger.dart`.
 - Add a real Supabase project to re-enable cross-device progress sync.

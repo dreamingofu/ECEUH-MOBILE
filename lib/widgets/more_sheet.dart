@@ -11,7 +11,6 @@ class MoreSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = EceuhExtras.of(context);
     final theme = context.watch<ThemeService>();
     return SafeArea(
       top: false,
