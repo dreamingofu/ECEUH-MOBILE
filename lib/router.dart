@@ -11,6 +11,8 @@ import 'screens/external_links_screen.dart';
 import 'screens/privacy_screen.dart';
 import 'screens/delete_account_screen.dart';
 import 'screens/preview_screen.dart';
+import 'screens/sign_in_screen.dart';
+import 'screens/settings_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -61,6 +63,18 @@ final appRouter = GoRouter(
           pageBuilder: (c, s) => const NoTransitionPage(child: FacultyScreen()),
         ),
       ],
+    ),
+    GoRoute(
+      path: '/sign-in',
+      name: 'sign-in',
+      parentNavigatorKey: _rootNavigatorKey,
+      pageBuilder: (c, s) => const MaterialPage(child: SignInScreen()),
+    ),
+    GoRoute(
+      path: '/settings',
+      name: 'settings',
+      parentNavigatorKey: _rootNavigatorKey,
+      pageBuilder: (c, s) => const MaterialPage(child: SettingsScreen()),
     ),
     GoRoute(
       path: '/privacy',
