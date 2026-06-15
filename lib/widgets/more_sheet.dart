@@ -22,6 +22,8 @@ class MoreSheet extends StatelessWidget {
           children: [
             Text('More', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 14),
+            _MoreItem(icon: Icons.settings_outlined, title: 'Settings', subtitle: 'Profile, notifications, appearance',
+              onTap: () { Navigator.pop(context); context.push('/settings'); }),
             _MoreItem(icon: Icons.shield_outlined, title: 'Privacy Policy', subtitle: 'What we collect and why',
               onTap: () { Navigator.pop(context); context.push('/privacy'); }),
             _MoreItem(icon: Icons.delete_outline, title: 'Delete Account', subtitle: 'Remove your data in 7 days',
