@@ -26,7 +26,7 @@ class _FacultyScreenState extends State<FacultyScreen> with SingleTickerProvider
   void initState() {
     super.initState();
     _ctrl = AnimationController(vsync: this, duration: Motion.enter)..forward();
-    _a = List.generate(2, (i) => Motion.stagger(_ctrl, i));
+    _a = List.generate(1, (i) => Motion.stagger(_ctrl, i));
   }
 
   @override
@@ -37,7 +37,6 @@ class _FacultyScreenState extends State<FacultyScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
-    final t = EceuhExtras.of(context);
     final q = _query.toLowerCase();
     final filtered = q.isEmpty
         ? kProfessorCourses
@@ -54,28 +53,12 @@ class _FacultyScreenState extends State<FacultyScreen> with SingleTickerProvider
             .toList();
 
     return SafeArea(
+      top: false,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(Spacing.s2, Spacing.s2, Spacing.s2, Spacing.s3),
+        padding: const EdgeInsets.fromLTRB(Spacing.s2, 220, Spacing.s2, Spacing.s3),
         children: [
           FadeSlide(
             animation: _a[0],
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('DIRECTORY //',
-                  style: TextStyle(color: t.textDim, fontFamily: t.mono, fontSize: 11, letterSpacing: 2)),
-                const SizedBox(height: 6),
-                Text('Faculty Ratings',
-                  style: TextStyle(fontFamily: t.serif, fontSize: 32, fontWeight: FontWeight.w700, height: 1.05, letterSpacing: -1, color: t.text)),
-                const SizedBox(height: 12),
-                Text('Sourced manually from RateMyProfessors. Click any card to view the original profile.',
-                  style: TextStyle(color: t.textMuted, fontSize: 14, height: 1.55)),
-              ],
-            ),
-          ),
-          const SizedBox(height: Spacing.s2),
-          FadeSlide(
-            animation: _a[1],
             child: SearchField(
               hint: 'Search courses or professors…',
               onChanged: (v) => setState(() => _query = v),
