@@ -5,9 +5,10 @@ import '../motion.dart';
 import '../theme.dart';
 import 'more_sheet.dart';
 
-/// App chrome — persistent top brand bar + pill-indicator bottom nav. Hosts
-/// the four primary tabs (Academy / Research / Ratings / Account). The
-/// hamburger in the top bar opens the secondary More sheet.
+/// App chrome — custom brand bar + pill-indicator bottom nav. Uses an explicit
+/// Column with [Expanded] for the body to guarantee the routed screen gets
+/// bounded vertical constraints (a plain `Scaffold.body: child` was producing
+/// zero-height layouts on some viewports).
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.child});
   final Widget child;
@@ -36,40 +37,23 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = EceuhExtras.of(context);
     final scheme = Theme.of(context).colorScheme;
     final index = _indexFor(context);
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: scheme.surface,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        toolbarHeight: 56,
-        leading: IconButton(
-          icon: Icon(Icons.menu, color: t.accent, size: 26),
-          onPressed: () => _openMore(context),
+      backgroundColor: scheme.surface,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          children: [
+            _BrandBar(
+              onMenu: () => _openMore(context),
+              onProfile: () => context.go('/settings'),
+            ),
+            Expanded(child: child),
+          ],
         ),
-        centerTitle: true,
-        title: Text(
-          'ELITE ENGINEERING',
-          style: TextStyle(
-            color: t.accent,
-            fontFamily: t.serif,
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.6,
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: _ProfileChip(onTap: () => context.go('/settings')),
-          ),
-        ],
       ),
-      body: child,
       bottomNavigationBar: _PillNav(
         index: index,
         onSelect: (i) {
@@ -80,6 +64,47 @@ class AppShell extends StatelessWidget {
             case 3: context.go('/settings'); break;
           }
         },
+      ),
+    );
+  }
+}
+
+class _BrandBar extends StatelessWidget {
+  const _BrandBar({required this.onMenu, required this.onProfile});
+  final VoidCallback onMenu;
+  final VoidCallback onProfile;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = EceuhExtras.of(context);
+    return SizedBox(
+      height: 56,
+      child: Row(
+        children: [
+          const SizedBox(width: 4),
+          IconButton(
+            icon: Icon(Icons.menu, color: t.accent, size: 26),
+            onPressed: onMenu,
+          ),
+          Expanded(
+            child: Center(
+              child: Text(
+                'ELITE ENGINEERING',
+                style: TextStyle(
+                  color: t.accent,
+                  fontFamily: t.serif,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.6,
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 16, left: 8),
+            child: _ProfileChip(onTap: onProfile),
+          ),
+        ],
       ),
     );
   }
