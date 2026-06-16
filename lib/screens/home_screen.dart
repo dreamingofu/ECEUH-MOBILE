@@ -192,7 +192,8 @@ class _ActiveCourseCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Resources ready', style: TextStyle(fontFamily: t.sans, fontSize: 13, fontWeight: FontWeight.w600, color: t.text)),
+                Flexible(child: Text('Resources ready', style: TextStyle(fontFamily: t.sans, fontSize: 13, fontWeight: FontWeight.w600, color: t.text))),
+                const SizedBox(width: 8),
                 Text('${progress.ready}/${progress.total} modules', style: TextStyle(fontFamily: t.sans, fontSize: 12, color: t.textMuted)),
               ],
             ),
