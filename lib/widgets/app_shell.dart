@@ -5,10 +5,13 @@ import '../motion.dart';
 import '../theme.dart';
 import 'more_sheet.dart';
 
-/// App chrome — custom brand bar + pill-indicator bottom nav. Uses an explicit
-/// Column with [Expanded] for the body to guarantee the routed screen gets
-/// bounded vertical constraints (a plain `Scaffold.body: child` was producing
-/// zero-height layouts on some viewports).
+/// App chrome — persistent top brand bar + pill-indicator bottom nav.
+///
+/// Root cause of the historic blank-body bug: the [_PillNav] Row wrapped each
+/// tab in [Center]. Flutter's Scaffold passes `maxHeight = screenHeight` (not
+/// infinity) to [Scaffold.bottomNavigationBar], so [Center] expanded to fill
+/// 800 px, leaving 0 px for the body. Fix: remove [Center] — the Row's own
+/// [crossAxisAlignment.center] handles vertical alignment.
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.child});
   final Widget child;
@@ -37,23 +40,40 @@ class AppShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = EceuhExtras.of(context);
     final scheme = Theme.of(context).colorScheme;
     final index = _indexFor(context);
 
     return Scaffold(
-      backgroundColor: scheme.surface,
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            _BrandBar(
-              onMenu: () => _openMore(context),
-              onProfile: () => context.go('/settings'),
-            ),
-            Expanded(child: child),
-          ],
+      appBar: AppBar(
+        backgroundColor: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        toolbarHeight: 56,
+        leading: IconButton(
+          icon: Icon(Icons.menu, color: t.accent, size: 26),
+          onPressed: () => _openMore(context),
         ),
+        centerTitle: true,
+        title: Text(
+          'ELITE ENGINEERING',
+          style: TextStyle(
+            color: t.accent,
+            fontFamily: t.serif,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.6,
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: _ProfileChip(onTap: () => context.go('/settings')),
+          ),
+        ],
       ),
+      body: child,
       bottomNavigationBar: _PillNav(
         index: index,
         onSelect: (i) {
@@ -64,47 +84,6 @@ class AppShell extends StatelessWidget {
             case 3: context.go('/settings'); break;
           }
         },
-      ),
-    );
-  }
-}
-
-class _BrandBar extends StatelessWidget {
-  const _BrandBar({required this.onMenu, required this.onProfile});
-  final VoidCallback onMenu;
-  final VoidCallback onProfile;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = EceuhExtras.of(context);
-    return SizedBox(
-      height: 56,
-      child: Row(
-        children: [
-          const SizedBox(width: 4),
-          IconButton(
-            icon: Icon(Icons.menu, color: t.accent, size: 26),
-            onPressed: onMenu,
-          ),
-          Expanded(
-            child: Center(
-              child: Text(
-                'ELITE ENGINEERING',
-                style: TextStyle(
-                  color: t.accent,
-                  fontFamily: t.serif,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.6,
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16, left: 8),
-            child: _ProfileChip(onTap: onProfile),
-          ),
-        ],
       ),
     );
   }
@@ -139,8 +118,10 @@ class _ProfileChip extends StatelessWidget {
   }
 }
 
-/// Bottom navigation with a pill-shaped selected-tab indicator that wraps
-/// both icon and label, per the Kinetic Luxe design system.
+/// Bottom navigation with a pill-shaped selected-tab indicator.
+/// NOTE: Do NOT wrap [_PillTab] in [Center] here — Center with a finite
+/// maxHeight (as passed by Scaffold.bottomNavigationBar) expands to fill
+/// the full screen height, leaving zero space for the body.
 class _PillNav extends StatelessWidget {
   const _PillNav({required this.index, required this.onSelect});
   final int index;
@@ -170,13 +151,11 @@ class _PillNav extends StatelessWidget {
             children: [
               for (int i = 0; i < _items.length; i++)
                 Expanded(
-                  child: Center(
-                    child: _PillTab(
-                      icon: index == i ? _items[i].$2 : _items[i].$1,
-                      label: _items[i].$3,
-                      selected: index == i,
-                      onTap: () => onSelect(i),
-                    ),
+                  child: _PillTab(
+                    icon: index == i ? _items[i].$2 : _items[i].$1,
+                    label: _items[i].$3,
+                    selected: index == i,
+                    onTap: () => onSelect(i),
                   ),
                 ),
             ],
@@ -210,30 +189,33 @@ class _PillTab extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(999),
         onTap: onTap,
-        child: AnimatedContainer(
-          duration: Motion.fast,
-          curve: Motion.std,
+        child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-          decoration: BoxDecoration(
-            color: selected ? t.accent : Colors.transparent,
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: fg, size: 22),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontFamily: t.sans,
-                  color: fg,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.2,
+          child: AnimatedContainer(
+            duration: Motion.fast,
+            curve: Motion.std,
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            decoration: BoxDecoration(
+              color: selected ? t.accent : Colors.transparent,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: fg, size: 22),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: t.sans,
+                    color: fg,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
