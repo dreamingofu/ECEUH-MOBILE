@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../data/professors.dart';
+import '../design/tokens.dart';
 import '../models/professor.dart';
 import '../motion.dart';
 import '../theme.dart';
+import '../widgets/glass/glass_card.dart';
+import '../widgets/glass/glass_chip.dart';
+import '../widgets/search_field.dart';
 
 class FacultyScreen extends StatefulWidget {
   const FacultyScreen({super.key});
@@ -22,7 +26,6 @@ class _FacultyScreenState extends State<FacultyScreen> with SingleTickerProvider
   void initState() {
     super.initState();
     _ctrl = AnimationController(vsync: this, duration: Motion.enter)..forward();
-    // header (kicker, title, description) + search field
     _a = List.generate(2, (i) => Motion.stagger(_ctrl, i));
   }
 
@@ -52,14 +55,15 @@ class _FacultyScreenState extends State<FacultyScreen> with SingleTickerProvider
 
     return SafeArea(
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+        padding: const EdgeInsets.fromLTRB(Spacing.s2, Spacing.s2, Spacing.s2, Spacing.s3),
         children: [
           FadeSlide(
             animation: _a[0],
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('DIRECTORY //', style: TextStyle(color: t.textDim, fontFamily: t.mono, fontSize: 11, letterSpacing: 2)),
+                Text('DIRECTORY //',
+                  style: TextStyle(color: t.textDim, fontFamily: t.mono, fontSize: 11, letterSpacing: 2)),
                 const SizedBox(height: 6),
                 Text('Faculty Ratings',
                   style: TextStyle(fontFamily: t.serif, fontSize: 32, fontWeight: FontWeight.w700, height: 1.05, letterSpacing: -1, color: t.text)),
@@ -69,62 +73,61 @@ class _FacultyScreenState extends State<FacultyScreen> with SingleTickerProvider
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: Spacing.s2),
           FadeSlide(
             animation: _a[1],
-            child: TextField(
+            child: SearchField(
+              hint: 'Search courses or professors…',
               onChanged: (v) => setState(() => _query = v),
-              decoration: const InputDecoration(
-                prefixIcon: Icon(Icons.search),
-                hintText: 'Search courses or professors…',
-              ),
             ),
           ),
-          const SizedBox(height: 18),
-          for (final course in filtered) _CourseBlock(course: course),
+          const SizedBox(height: Spacing.s3),
+          for (final course in filtered) _CourseSection(course: course),
         ],
       ),
     );
   }
 }
 
-class _CourseBlock extends StatelessWidget {
-  const _CourseBlock({required this.course});
+/// A course header floating above its professor cards — no outer container.
+/// Removing the nested elevation lets each prof card read as its own glass
+/// surface against the scaffold, per the design system's "elevation through
+/// glass + breathing room" guidance.
+class _CourseSection extends StatelessWidget {
+  const _CourseSection({required this.course});
   final ProfessorCourse course;
 
   @override
   Widget build(BuildContext context) {
     final t = EceuhExtras.of(context);
-
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
       duration: Motion.mid,
       curve: Motion.std,
-      builder: (context, v, child) => Opacity(opacity: v, child: child),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: t.card,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: t.border),
-        ),
-        padding: const EdgeInsets.all(18),
+      builder: (_, v, child) => Opacity(opacity: v, child: child),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: Spacing.s3),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(course.title, style: TextStyle(fontFamily: t.serif, fontWeight: FontWeight.w700, fontSize: 18, color: t.text)),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(color: t.accent.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(999)),
-                  child: Text(course.code.replaceAll(' ', '_'), style: TextStyle(fontFamily: t.mono, fontSize: 10, color: t.accent, fontWeight: FontWeight.w700, letterSpacing: 1)),
-                ),
-              ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: Spacing.s1),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(course.title,
+                      style: TextStyle(fontFamily: t.serif, fontWeight: FontWeight.w700, fontSize: 16, color: t.text)),
+                  ),
+                  const SizedBox(width: Spacing.s1),
+                  GlassChip(label: course.code.replaceAll(' ', '_')),
+                ],
+              ),
             ),
-            const SizedBox(height: 14),
-            ...course.profs.map((p) => _ProfRow(p: p)),
+            const SizedBox(height: 12),
+            for (int i = 0; i < course.profs.length; i++) ...[
+              if (i > 0) const SizedBox(height: 12),
+              _ProfCard(p: course.profs[i]),
+            ],
           ],
         ),
       ),
@@ -132,44 +135,21 @@ class _CourseBlock extends StatelessWidget {
   }
 }
 
-class _ProfRow extends StatelessWidget {
-  const _ProfRow({required this.p});
+class _ProfCard extends StatelessWidget {
+  const _ProfCard({required this.p});
   final Professor p;
-
-  Color _meterColor(double? value, BuildContext ctx) {
-    if (value == null) return EceuhExtras.of(ctx).border;
-    if (value >= 4)   return const Color(0xFF15803D);
-    if (value >= 2.5) return const Color(0xFFB45309);
-    return const Color(0xFFB91C1C);
-  }
 
   @override
   Widget build(BuildContext context) {
     final t = EceuhExtras.of(context);
-    return Container(
-      margin: const EdgeInsets.only(top: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: t.overlay,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: t.border),
-      ),
+    return GlassCard(
+      padding: const EdgeInsets.all(18),
+      elevation: AppElevation.soft,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Container(
-              width: 48, height: 48,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(colors: [
-                  Theme.of(context).brightness == Brightness.dark ? const Color(0xFFFF6363) : const Color(0xFFB94A4A),
-                  const Color(0xFF7A2828),
-                ], begin: Alignment.topLeft, end: Alignment.bottomRight),
-              ),
-              alignment: Alignment.center,
-              child: Text(p.initials, style: TextStyle(fontFamily: t.serif, color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14, letterSpacing: 0.4)),
-            ),
+            _AvatarChip(initials: p.initials),
             const SizedBox(width: 12),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -179,19 +159,19 @@ class _ProfRow extends StatelessWidget {
             ),
           ]),
           if (p.hasRating) ...[
-            const SizedBox(height: 14),
-            _MeterRow(label: 'OVERALL RATING', value: '${p.overall!.toStringAsFixed(1)} / 5.0', meter: (p.overall ?? 0) / 5, color: _meterColor(p.overall, context)),
-            const SizedBox(height: 8),
-            _MeterRow(label: 'DIFFICULTY', value: '${p.difficulty?.toStringAsFixed(1) ?? '—'} / 5.0', meter: (p.difficulty ?? 0) / 5, color: _meterColor(p.difficulty, context)),
-            const SizedBox(height: 8),
-            _MeterRow(label: 'WOULD TAKE AGAIN', value: '${p.wouldTake ?? '—'}%', meter: (p.wouldTake ?? 0) / 100, color: const Color(0xFF15803D)),
+            const SizedBox(height: Spacing.s2),
+            _MeterRow(label: 'OVERALL RATING',   value: '${p.overall!.toStringAsFixed(1)} / 5.0',                   meter: (p.overall ?? 0) / 5),
+            const SizedBox(height: Spacing.s1),
+            _MeterRow(label: 'DIFFICULTY',       value: '${p.difficulty?.toStringAsFixed(1) ?? '—'} / 5.0',         meter: (p.difficulty ?? 0) / 5),
+            const SizedBox(height: Spacing.s1),
+            _MeterRow(label: 'WOULD TAKE AGAIN', value: '${p.wouldTake ?? '—'}%',                                   meter: (p.wouldTake ?? 0) / 100),
           ] else
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: Text('No ratings yet.', style: TextStyle(color: t.textDim, fontStyle: FontStyle.italic, fontSize: 12)),
             ),
           if (p.rmpUrl != null) ...[
-            const SizedBox(height: 14),
+            const SizedBox(height: Spacing.s2),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -207,11 +187,34 @@ class _ProfRow extends StatelessWidget {
   }
 }
 
+/// Soft accent-tinted circle with bold gold initials. Replaces the previous
+/// red-gradient avatar which violated the design system's gold-anchored,
+/// no-mid-tone palette rules.
+class _AvatarChip extends StatelessWidget {
+  const _AvatarChip({required this.initials});
+  final String initials;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = EceuhExtras.of(context);
+    return Container(
+      width: 48, height: 48,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: t.accent.withValues(alpha: 0.12),
+        border: Border.all(color: t.accent.withValues(alpha: 0.32), width: 1.5),
+      ),
+      alignment: Alignment.center,
+      child: Text(initials,
+        style: TextStyle(fontFamily: t.serif, color: t.accent, fontWeight: FontWeight.w800, fontSize: 14, letterSpacing: 0.6)),
+    );
+  }
+}
+
 class _MeterRow extends StatelessWidget {
-  const _MeterRow({required this.label, required this.value, required this.meter, required this.color});
+  const _MeterRow({required this.label, required this.value, required this.meter});
   final String label, value;
   final double meter;
-  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -219,11 +222,11 @@ class _MeterRow extends StatelessWidget {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
         Text(label, style: TextStyle(color: t.textDim, fontSize: 11, letterSpacing: 0.6, fontWeight: FontWeight.w600)),
-        Text(value, style: TextStyle(color: color, fontFamily: t.mono, fontWeight: FontWeight.w700)),
+        Text(value, style: TextStyle(color: t.accent, fontFamily: t.mono, fontWeight: FontWeight.w700)),
       ]),
       const SizedBox(height: 4),
       ClipRRect(
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(Radii.pill),
         child: TweenAnimationBuilder<double>(
           tween: Tween(begin: 0, end: meter.clamp(0, 1)),
           duration: const Duration(milliseconds: 900),
@@ -232,7 +235,7 @@ class _MeterRow extends StatelessWidget {
             value: v,
             minHeight: 6,
             backgroundColor: t.border,
-            valueColor: AlwaysStoppedAnimation(color),
+            valueColor: AlwaysStoppedAnimation(t.accent),
           ),
         ),
       ),
