@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../data/professors.dart';
 import '../models/professor.dart';
+import '../motion.dart';
 import '../theme.dart';
 
 class FacultyScreen extends StatefulWidget {
@@ -12,8 +13,24 @@ class FacultyScreen extends StatefulWidget {
   State<FacultyScreen> createState() => _FacultyScreenState();
 }
 
-class _FacultyScreenState extends State<FacultyScreen> {
+class _FacultyScreenState extends State<FacultyScreen> with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final List<Animation<double>> _a;
   String _query = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: Motion.enter)..forward();
+    // header (kicker, title, description) + search field
+    _a = List.generate(2, (i) => Motion.stagger(_ctrl, i));
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,19 +54,30 @@ class _FacultyScreenState extends State<FacultyScreen> {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         children: [
-          Text('DIRECTORY //', style: TextStyle(color: t.textDim, fontFamily: t.mono, fontSize: 11, letterSpacing: 2)),
-          const SizedBox(height: 6),
-          Text('Faculty Ratings',
-            style: TextStyle(fontFamily: t.serif, fontSize: 32, fontWeight: FontWeight.w700, height: 1.05, letterSpacing: -1, color: t.text)),
-          const SizedBox(height: 12),
-          Text('Sourced manually from RateMyProfessors. Click any card to view the original profile.',
-            style: TextStyle(color: t.textMuted, fontSize: 14, height: 1.55)),
+          FadeSlide(
+            animation: _a[0],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('DIRECTORY //', style: TextStyle(color: t.textDim, fontFamily: t.mono, fontSize: 11, letterSpacing: 2)),
+                const SizedBox(height: 6),
+                Text('Faculty Ratings',
+                  style: TextStyle(fontFamily: t.serif, fontSize: 32, fontWeight: FontWeight.w700, height: 1.05, letterSpacing: -1, color: t.text)),
+                const SizedBox(height: 12),
+                Text('Sourced manually from RateMyProfessors. Click any card to view the original profile.',
+                  style: TextStyle(color: t.textMuted, fontSize: 14, height: 1.55)),
+              ],
+            ),
+          ),
           const SizedBox(height: 16),
-          TextField(
-            onChanged: (v) => setState(() => _query = v),
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search),
-              hintText: 'Search courses or professors…',
+          FadeSlide(
+            animation: _a[1],
+            child: TextField(
+              onChanged: (v) => setState(() => _query = v),
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                hintText: 'Search courses or professors…',
+              ),
             ),
           ),
           const SizedBox(height: 18),
@@ -67,31 +95,38 @@ class _CourseBlock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = EceuhExtras.of(context);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: t.card,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: t.border),
-      ),
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(course.title, style: TextStyle(fontFamily: t.serif, fontWeight: FontWeight.w700, fontSize: 18, color: t.text)),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(color: t.accent.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(999)),
-                child: Text(course.code.replaceAll(' ', '_'), style: TextStyle(fontFamily: t.mono, fontSize: 10, color: t.accent, fontWeight: FontWeight.w700, letterSpacing: 1)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          ...course.profs.map((p) => _ProfRow(p: p)),
-        ],
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0, end: 1),
+      duration: Motion.mid,
+      curve: Motion.std,
+      builder: (context, v, child) => Opacity(opacity: v, child: child),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: t.card,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: t.border),
+        ),
+        padding: const EdgeInsets.all(18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(course.title, style: TextStyle(fontFamily: t.serif, fontWeight: FontWeight.w700, fontSize: 18, color: t.text)),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(color: t.accent.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(999)),
+                  child: Text(course.code.replaceAll(' ', '_'), style: TextStyle(fontFamily: t.mono, fontSize: 10, color: t.accent, fontWeight: FontWeight.w700, letterSpacing: 1)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            ...course.profs.map((p) => _ProfRow(p: p)),
+          ],
+        ),
       ),
     );
   }
@@ -189,11 +224,16 @@ class _MeterRow extends StatelessWidget {
       const SizedBox(height: 4),
       ClipRRect(
         borderRadius: BorderRadius.circular(999),
-        child: LinearProgressIndicator(
-          value: meter.clamp(0, 1),
-          minHeight: 6,
-          backgroundColor: t.border,
-          valueColor: AlwaysStoppedAnimation(color),
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: meter.clamp(0, 1)),
+          duration: const Duration(milliseconds: 900),
+          curve: Motion.std,
+          builder: (_, v, __) => LinearProgressIndicator(
+            value: v,
+            minHeight: 6,
+            backgroundColor: t.border,
+            valueColor: AlwaysStoppedAnimation(color),
+          ),
         ),
       ),
     ]);

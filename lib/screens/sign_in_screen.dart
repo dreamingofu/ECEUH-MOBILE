@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../motion.dart';
 import '../theme.dart';
 import '../widgets/gold_button.dart';
 
@@ -15,17 +16,29 @@ class SignInScreen extends StatefulWidget {
   State<SignInScreen> createState() => _SignInScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> {
+class _SignInScreenState extends State<SignInScreen> with SingleTickerProviderStateMixin {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscure = true;
   bool _remember = false;
   bool _loading = false;
 
+  late final AnimationController _ctrl;
+  late final List<Animation<double>> _a;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: Motion.enter)..forward();
+    // logo, title/subtitle, form card, footer
+    _a = List.generate(4, (i) => Motion.stagger(_ctrl, i));
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _ctrl.dispose();
     super.dispose();
   }
 
@@ -65,22 +78,37 @@ class _SignInScreenState extends State<SignInScreen> {
                   constraints: const BoxConstraints(maxWidth: 480),
                   child: Column(
                     children: [
-                      Container(
-                        width: 80, height: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: goldGradient,
-                          boxShadow: [BoxShadow(color: t.goldEnd.withValues(alpha: 0.3), blurRadius: 24, offset: const Offset(0, 10))],
+                      ScaleTransition(
+                        scale: Tween(begin: 0.6, end: 1.0).animate(_a[0]),
+                        child: FadeTransition(
+                          opacity: _a[0],
+                          child: Container(
+                            width: 80, height: 80,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: goldGradient,
+                              boxShadow: [BoxShadow(color: t.goldEnd.withValues(alpha: 0.3), blurRadius: 24, offset: const Offset(0, 10))],
+                            ),
+                            alignment: Alignment.center,
+                            child: Icon(Icons.bolt, color: scheme.onPrimary, size: 40),
+                          ),
                         ),
-                        alignment: Alignment.center,
-                        child: Icon(Icons.bolt, color: scheme.onPrimary, size: 40),
                       ),
                       const SizedBox(height: 16),
-                      Text('ECEUH', style: textTheme.displayLarge?.copyWith(color: t.accent, letterSpacing: -1.5)),
-                      const SizedBox(height: 4),
-                      Text('ECE COURSEWORK ARCHIVE', style: textTheme.labelSmall?.copyWith(color: t.textMuted)),
+                      FadeSlide(
+                        animation: _a[1],
+                        child: Column(
+                          children: [
+                            Text('ECEUH', style: textTheme.displayLarge?.copyWith(color: t.accent, letterSpacing: -1.5)),
+                            const SizedBox(height: 4),
+                            Text('ECE COURSEWORK ARCHIVE', style: textTheme.labelSmall?.copyWith(color: t.textMuted)),
+                          ],
+                        ),
+                      ),
                       const SizedBox(height: 36),
-                      Container(
+                      FadeSlide(
+                        animation: _a[2],
+                        child: Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(28),
                         decoration: BoxDecoration(
@@ -187,17 +215,21 @@ class _SignInScreenState extends State<SignInScreen> {
                           ],
                         ),
                       ),
+                      ),  // FadeSlide (form card)
                       const SizedBox(height: 32),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _FooterLink(label: 'Privacy Policy', onTap: () => context.push('/privacy')),
-                          const SizedBox(width: 24),
-                          _FooterLink(
-                            label: 'Support',
-                            onTap: () => launchUrl(Uri.parse('https://github.com/dreamingofu/eceuh'), mode: LaunchMode.externalApplication),
-                          ),
-                        ],
+                      FadeSlide(
+                        animation: _a[3],
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _FooterLink(label: 'Privacy Policy', onTap: () => context.push('/privacy')),
+                            const SizedBox(width: 24),
+                            _FooterLink(
+                              label: 'Support',
+                              onTap: () => launchUrl(Uri.parse('https://github.com/dreamingofu/eceuh'), mode: LaunchMode.externalApplication),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

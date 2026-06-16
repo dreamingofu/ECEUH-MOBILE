@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../motion.dart';
 import '../theme.dart';
 
-class HubCard extends StatelessWidget {
+class HubCard extends StatefulWidget {
   const HubCard({
     super.key,
     required this.title,
@@ -19,51 +20,65 @@ class HubCard extends StatelessWidget {
   final List<String> tags;
 
   @override
+  State<HubCard> createState() => _HubCardState();
+}
+
+class _HubCardState extends State<HubCard> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
     final t = EceuhExtras.of(context);
-    return Material(
-      color: t.card,
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
+
+    return AnimatedScale(
+      scale: _pressed ? 0.97 : 1.0,
+      duration: Motion.press,
+      curve: Curves.easeOut,
+      child: Material(
+        color: t.card,
         borderRadius: BorderRadius.circular(22),
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: t.border),
-          ),
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 46, height: 46,
-                decoration: BoxDecoration(
-                  color: t.accent.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(22),
+          onHighlightChanged: (v) => setState(() => _pressed = v),
+          onTap: widget.onTap,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: t.border),
+            ),
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 46, height: 46,
+                  decoration: BoxDecoration(
+                    color: t.accent.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(widget.icon, color: t.accent),
                 ),
-                child: Icon(icon, color: t.accent),
-              ),
-              const SizedBox(height: 14),
-              Text(title, style: TextStyle(fontFamily: t.serif, fontSize: 20, fontWeight: FontWeight.w700, color: t.text)),
-              const SizedBox(height: 8),
-              Text(subtitle, style: TextStyle(color: t.textSoft, fontSize: 13, height: 1.55)),
-              if (tags.isNotEmpty) ...[
                 const SizedBox(height: 14),
-                Wrap(
-                  spacing: 6, runSpacing: 6,
-                  children: tags.map((tag) => _Pill(label: tag)).toList(),
+                Text(widget.title, style: TextStyle(fontFamily: t.serif, fontSize: 20, fontWeight: FontWeight.w700, color: t.text)),
+                const SizedBox(height: 8),
+                Text(widget.subtitle, style: TextStyle(color: t.textSoft, fontSize: 13, height: 1.55)),
+                if (widget.tags.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  Wrap(
+                    spacing: 6, runSpacing: 6,
+                    children: widget.tags.map((tag) => _Pill(label: tag)).toList(),
+                  ),
+                ],
+                const SizedBox(height: 14),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Open', style: TextStyle(color: t.textDim, fontSize: 13)),
+                    Text('→', style: TextStyle(color: t.accent, fontFamily: t.mono, fontWeight: FontWeight.w700)),
+                  ],
                 ),
               ],
-              const SizedBox(height: 14),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Open', style: TextStyle(color: t.textDim, fontSize: 13)),
-                  Text('→', style: TextStyle(color: t.accent, fontFamily: t.mono, fontWeight: FontWeight.w700)),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -74,6 +89,7 @@ class HubCard extends StatelessWidget {
 class _Pill extends StatelessWidget {
   const _Pill({required this.label});
   final String label;
+
   @override
   Widget build(BuildContext context) {
     final t = EceuhExtras.of(context);
