@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../design/tokens.dart';
 import '../services/theme_service.dart';
 import '../theme.dart';
 
@@ -69,7 +70,7 @@ class _MoreItem extends StatelessWidget {
                 width: 36, height: 36,
                 decoration: BoxDecoration(
                   color: t.accent.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(Radii.sm + 2),
                 ),
                 child: Icon(icon, size: 18, color: t.accent),
               ),

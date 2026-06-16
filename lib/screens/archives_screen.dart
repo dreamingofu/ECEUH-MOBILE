@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/courses.dart';
+import '../design/tokens.dart';
 import '../models/course.dart';
 import '../motion.dart';
 import '../theme.dart';
+import '../widgets/glass/glass_card.dart';
 
 class ArchivesScreen extends StatefulWidget {
   const ArchivesScreen({super.key});
@@ -20,7 +22,6 @@ class _ArchivesScreenState extends State<ArchivesScreen> with SingleTickerProvid
   @override
   void initState() {
     super.initState();
-    // Groups: header, "Live" label, live cards (1 per course), "On Deck" label, on-deck container.
     final count = 3 + liveCourses.length + 2;
     _ctrl = AnimationController(vsync: this, duration: Motion.enter)..forward();
     _a = List.generate(count, (i) => Motion.stagger(_ctrl, i));
@@ -38,8 +39,9 @@ class _ArchivesScreenState extends State<ArchivesScreen> with SingleTickerProvid
     var ai = 0;
 
     return SafeArea(
+      top: false,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+        padding: const EdgeInsets.fromLTRB(Spacing.s2, Spacing.s2, Spacing.s2, Spacing.s3),
         children: [
           FadeSlide(
             animation: _a[ai++],
@@ -57,7 +59,7 @@ class _ArchivesScreenState extends State<ArchivesScreen> with SingleTickerProvid
               ],
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: Spacing.s4 - 4),
           FadeSlide(
             animation: _a[ai++],
             child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
@@ -72,7 +74,7 @@ class _ArchivesScreenState extends State<ArchivesScreen> with SingleTickerProvid
               animation: _a[ai++],
               child: _LiveCard(course: c, onTap: () => context.push('/archives/course/${c.slug}')),
             ),
-          const SizedBox(height: 28),
+          const SizedBox(height: Spacing.s4 - 4),
           FadeSlide(
             animation: _a[ai++],
             child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
@@ -84,25 +86,31 @@ class _ArchivesScreenState extends State<ArchivesScreen> with SingleTickerProvid
           const SizedBox(height: 12),
           FadeSlide(
             animation: _a[ai],
-            child: Container(
-              decoration: BoxDecoration(
-                color: t.card,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: t.border),
-              ),
+            child: GlassCard(
+              padding: EdgeInsets.zero,
+              radius: Radii.md,
               child: Column(
                 children: [
-                  for (final c in upcomingCourses)
+                  for (int i = 0; i < upcomingCourses.length; i++)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: t.border))),
+                      padding: const EdgeInsets.symmetric(horizontal: Spacing.s2, vertical: 14),
+                      decoration: i < upcomingCourses.length - 1
+                          ? BoxDecoration(border: Border(bottom: BorderSide(color: t.border)))
+                          : null,
                       child: Row(
                         children: [
-                          SizedBox(width: 64, child: Text(c.code, style: TextStyle(fontFamily: t.mono, fontSize: 11, color: t.textDim, fontWeight: FontWeight.w700))),
-                          Expanded(child: Text(c.displayArchiveTitle, style: TextStyle(color: t.textMuted, fontSize: 14))),
+                          SizedBox(
+                            width: 64,
+                            child: Text(upcomingCourses[i].code,
+                              style: TextStyle(fontFamily: t.mono, fontSize: 11, color: t.textDim, fontWeight: FontWeight.w700)),
+                          ),
+                          Expanded(
+                            child: Text(upcomingCourses[i].displayArchiveTitle,
+                              style: TextStyle(color: t.textMuted, fontSize: 14)),
+                          ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(color: t.border, borderRadius: BorderRadius.circular(20)),
+                            decoration: BoxDecoration(color: t.border, borderRadius: BorderRadius.circular(Radii.pill)),
                             child: Text('Coming soon', style: TextStyle(color: t.textDim, fontSize: 10, letterSpacing: 0.5)),
                           ),
                         ],
@@ -118,17 +126,10 @@ class _ArchivesScreenState extends State<ArchivesScreen> with SingleTickerProvid
   }
 }
 
-class _LiveCard extends StatefulWidget {
+class _LiveCard extends StatelessWidget {
   const _LiveCard({required this.course, required this.onTap});
   final Course course;
   final VoidCallback onTap;
-
-  @override
-  State<_LiveCard> createState() => _LiveCardState();
-}
-
-class _LiveCardState extends State<_LiveCard> {
-  bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -136,43 +137,36 @@ class _LiveCardState extends State<_LiveCard> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: AnimatedScale(
-        scale: _pressed ? 0.97 : 1.0,
-        duration: Motion.press,
-        curve: Curves.easeOut,
-        child: Material(
-          color: t.card,
-          borderRadius: BorderRadius.circular(20),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onHighlightChanged: (v) => setState(() => _pressed = v),
-            onTap: widget.onTap,
-            child: Container(
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), border: Border.all(color: t.border)),
-              padding: const EdgeInsets.all(16),
-              child: Row(children: [
-                Container(
-                  width: 60, height: 60,
-                  decoration: BoxDecoration(
-                    color: t.accent.withValues(alpha: 0.10),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(Icons.menu_book_outlined, color: t.accent),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(widget.course.code, style: TextStyle(fontFamily: t.mono, fontSize: 10, color: t.accent, letterSpacing: 1.2, fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 4),
-                    Text(widget.course.displayArchiveTitle, style: TextStyle(fontFamily: t.serif, fontWeight: FontWeight.w700, fontSize: 17, fontStyle: FontStyle.italic, color: t.text)),
-                    const SizedBox(height: 4),
-                    Text('${widget.course.units} units · Live', style: TextStyle(color: t.textDim, fontSize: 12)),
-                  ]),
-                ),
-                Icon(Icons.chevron_right, color: t.textDim),
+      child: PressScale(
+        borderRadius: BorderRadius.circular(Radii.lg),
+        onTap: onTap,
+        child: GlassCard(
+          padding: const EdgeInsets.all(Spacing.s2),
+          radius: Radii.lg,
+          elevation: AppElevation.soft,
+          child: Row(children: [
+            Container(
+              width: 60, height: 60,
+              decoration: BoxDecoration(
+                color: t.accent.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(Radii.sm + 6),
+              ),
+              child: Icon(Icons.menu_book_outlined, color: t.accent),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(course.code,
+                  style: TextStyle(fontFamily: t.mono, fontSize: 10, color: t.accent, letterSpacing: 1.2, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 4),
+                Text(course.displayArchiveTitle,
+                  style: TextStyle(fontFamily: t.serif, fontWeight: FontWeight.w700, fontSize: 17, fontStyle: FontStyle.italic, color: t.text)),
+                const SizedBox(height: 4),
+                Text('${course.units} units · Live', style: TextStyle(color: t.textDim, fontSize: 12)),
               ]),
             ),
-          ),
+            Icon(Icons.chevron_right, color: t.textDim),
+          ]),
         ),
       ),
     );
