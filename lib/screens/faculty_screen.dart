@@ -55,7 +55,7 @@ class _FacultyScreenState extends State<FacultyScreen> with SingleTickerProvider
     return SafeArea(
       top: false,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(Spacing.s2, 220, Spacing.s2, Spacing.s3),
+        padding: const EdgeInsets.fromLTRB(Spacing.s2, Spacing.s4, Spacing.s2, Spacing.s3),
         children: [
           FadeSlide(
             animation: _a[0],

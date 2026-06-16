@@ -41,41 +41,45 @@ class AppShell extends StatelessWidget {
     final index = _indexFor(context);
 
     return Scaffold(
-      backgroundColor: scheme.surface,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(56),
-        child: AppBar(
-          backgroundColor: scheme.surface,
-          surfaceTintColor: Colors.transparent,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          leading: IconButton(
-            icon: Icon(Icons.menu, color: t.accent, size: 26),
-            onPressed: () => _openMore(context),
-          ),
-          centerTitle: true,
-          title: Text(
-            'ELITE ENGINEERING',
-            style: TextStyle(
-              color: t.accent,
-              fontFamily: t.serif,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.6,
-            ),
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: _ProfileChip(onTap: () => context.go('/settings')),
-            ),
-          ],
+      appBar: AppBar(
+        backgroundColor: scheme.surface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        toolbarHeight: 56,
+        leading: IconButton(
+          icon: Icon(Icons.menu, color: t.accent, size: 26),
+          onPressed: () => _openMore(context),
         ),
+        centerTitle: true,
+        title: Text(
+          'ELITE ENGINEERING',
+          style: TextStyle(
+            color: t.accent,
+            fontFamily: t.serif,
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.6,
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: _ProfileChip(onTap: () => context.go('/settings')),
+          ),
+        ],
       ),
       body: AnimatedSwitcher(
         duration: Motion.fast,
         switchInCurve: Motion.decel,
         switchOutCurve: Motion.accel,
+        layoutBuilder: (currentChild, previousChildren) => Stack(
+          fit: StackFit.expand,
+          children: [
+            ...previousChildren,
+            if (currentChild != null) currentChild,
+          ],
+        ),
         transitionBuilder: (child, animation) =>
             FadeTransition(opacity: animation, child: child),
         child: KeyedSubtree(key: ValueKey(index), child: child),
