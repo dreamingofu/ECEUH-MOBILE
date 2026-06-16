@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/courses.dart';
+import '../design/tokens.dart';
 import '../models/course.dart';
 import '../motion.dart';
 import '../theme.dart';
 import '../widgets/app_promo_banner.dart';
 import '../widgets/faculty_ledger.dart';
+import '../widgets/glass/glass_card.dart';
 import '../widgets/search_field.dart';
 
 ({int ready, int total}) _moduleProgress(Course c) {
@@ -49,8 +51,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     final activeCourse = liveCourses.first;
 
     return SafeArea(
+      top: false,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+        padding: const EdgeInsets.fromLTRB(Spacing.s2, Spacing.s2, Spacing.s2, Spacing.s3),
         children: [
           FadeSlide(
             animation: _a[0],
@@ -78,13 +81,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: Spacing.s2),
           FadeSlide(animation: _a[1], child: const SearchField()),
-          const SizedBox(height: 24),
+          const SizedBox(height: Spacing.s3),
           FadeSlide(animation: _a[2], child: _ActiveCourseCard(course: activeCourse)),
-          const SizedBox(height: 16),
+          const SizedBox(height: Spacing.s2),
           FadeSlide(animation: _a[3], child: const _FacultyCtaCard()),
-          const SizedBox(height: 28),
+          const SizedBox(height: Spacing.s4 - 4),
           FadeSlide(
             animation: _a[4],
             child: Row(
@@ -105,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: Spacing.s2),
           FadeSlide(
             animation: _a[5],
             child: SizedBox(
@@ -114,13 +117,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 scrollDirection: Axis.horizontal,
                 itemCount: liveCourses.length,
                 itemBuilder: (context, i) => Padding(
-                  padding: EdgeInsets.only(right: i == liveCourses.length - 1 ? 0 : 16),
+                  padding: EdgeInsets.only(right: i == liveCourses.length - 1 ? 0 : Spacing.s2),
                   child: _LibraryCard(course: liveCourses[i]),
                 ),
               ),
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: Spacing.s4 - 4),
           FadeSlide(animation: _a[6], child: const FacultyLedger()),
         ],
       ),
@@ -128,131 +131,113 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   }
 }
 
-class _ActiveCourseCard extends StatefulWidget {
+class _ActiveCourseCard extends StatelessWidget {
   const _ActiveCourseCard({required this.course});
   final Course course;
 
   @override
-  State<_ActiveCourseCard> createState() => _ActiveCourseCardState();
-}
-
-class _ActiveCourseCardState extends State<_ActiveCourseCard> {
-  bool _pressed = false;
-
-  @override
   Widget build(BuildContext context) {
     final t = EceuhExtras.of(context);
-    final progress = _moduleProgress(widget.course);
+    final progress = _moduleProgress(course);
     final pct = (progress.ready / progress.total * 100).round();
 
-    return AnimatedScale(
-      scale: _pressed ? 0.98 : 1.0,
-      duration: Motion.press,
-      curve: Curves.easeOut,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(28),
-          onHighlightChanged: (v) => setState(() => _pressed = v),
-          onTap: () => context.push('/archives/course/${widget.course.slug}'),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: t.overlay,
-              borderRadius: BorderRadius.circular(28),
-              border: Border.all(color: t.border),
-            ),
-            child: Column(
+    return PressScale(
+      borderRadius: BorderRadius.circular(Radii.xl),
+      onTap: () => context.push('/archives/course/${course.slug}'),
+      child: GlassCard(
+        padding: const EdgeInsets.all(Spacing.s3),
+        radius: Radii.xl,
+        elevation: AppElevation.soft,
+        tinted: true,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: t.accent.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text('ACTIVE COURSE',
-                              style: TextStyle(fontFamily: t.sans, color: t.accent, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(widget.course.hub?.title ?? widget.course.title,
-                            style: TextStyle(fontFamily: t.serif, fontSize: 24, fontWeight: FontWeight.w600, color: t.text, height: 1.2)),
-                          const SizedBox(height: 4),
-                          Text('${widget.course.code} · ${widget.course.desc}',
-                            maxLines: 2, overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: t.textSoft, fontSize: 13, height: 1.5)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    TweenAnimationBuilder<int>(
-                      tween: IntTween(begin: 0, end: pct),
-                      duration: Motion.slow,
-                      curve: Motion.std,
-                      builder: (_, v, __) => Text('$v%',
-                        style: TextStyle(fontFamily: t.serif, fontSize: 28, fontWeight: FontWeight.w700, color: t.accent)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Resources ready', style: TextStyle(fontFamily: t.sans, fontSize: 13, fontWeight: FontWeight.w600, color: t.text)),
-                    Text('${progress.ready}/${progress.total} modules', style: TextStyle(fontFamily: t.sans, fontSize: 12, color: t.textMuted)),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: double.infinity,
-                  height: 8,
-                  child: Stack(
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: t.border.withValues(alpha: 0.4),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: t.accent.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(Radii.pill),
                         ),
+                        child: Text('ACTIVE COURSE',
+                          style: TextStyle(fontFamily: t.sans, color: t.accent, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
                       ),
-                      TweenAnimationBuilder<double>(
-                        tween: Tween(begin: 0, end: progress.ready / progress.total),
-                        duration: const Duration(milliseconds: 900),
-                        curve: Motion.std,
-                        builder: (_, v, child) => FractionallySizedBox(
-                          alignment: Alignment.centerLeft,
-                          widthFactor: v,
-                          child: child,
-                        ),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(colors: [t.goldStart, t.goldEnd]),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                        ),
-                      ),
+                      const SizedBox(height: 12),
+                      Text(course.hub?.title ?? course.title,
+                        style: TextStyle(fontFamily: t.serif, fontSize: 24, fontWeight: FontWeight.w600, color: t.text, height: 1.2)),
+                      const SizedBox(height: 4),
+                      Text('${course.code} · ${course.desc}',
+                        maxLines: 2, overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: t.textSoft, fontSize: 13, height: 1.5)),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(child: _StatBox(label: 'MODULES', value: '${progress.ready}/${progress.total}')),
-                    const SizedBox(width: 12),
-                    Expanded(child: _StatBox(label: 'UNITS', value: '${widget.course.units}')),
-                  ],
+                const SizedBox(width: 12),
+                TweenAnimationBuilder<int>(
+                  tween: IntTween(begin: 0, end: pct),
+                  duration: Motion.slow,
+                  curve: Motion.std,
+                  builder: (_, v, __) => Text('$v%',
+                    style: TextStyle(fontFamily: t.serif, fontSize: 28, fontWeight: FontWeight.w700, color: t.accent)),
                 ),
               ],
             ),
-          ),
+            const SizedBox(height: Spacing.s3 - 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Resources ready', style: TextStyle(fontFamily: t.sans, fontSize: 13, fontWeight: FontWeight.w600, color: t.text)),
+                Text('${progress.ready}/${progress.total} modules', style: TextStyle(fontFamily: t.sans, fontSize: 12, color: t.textMuted)),
+              ],
+            ),
+            const SizedBox(height: Spacing.s1),
+            SizedBox(
+              width: double.infinity,
+              height: 8,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: t.border.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(Radii.pill),
+                      ),
+                    ),
+                  ),
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: progress.ready / progress.total),
+                    duration: const Duration(milliseconds: 900),
+                    curve: Motion.std,
+                    builder: (_, v, child) => FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: v,
+                      child: child,
+                    ),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: [t.goldStart, t.goldEnd]),
+                        borderRadius: BorderRadius.circular(Radii.pill),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: Spacing.s2),
+            Row(
+              children: [
+                Expanded(child: _StatBox(label: 'MODULES', value: '${progress.ready}/${progress.total}')),
+                const SizedBox(width: 12),
+                Expanded(child: _StatBox(label: 'UNITS', value: '${course.units}')),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -270,7 +255,7 @@ class _StatBox extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: t.card.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(Radii.md),
         border: Border.all(color: t.border),
       ),
       child: Column(
@@ -285,64 +270,52 @@ class _StatBox extends StatelessWidget {
   }
 }
 
-class _FacultyCtaCard extends StatefulWidget {
+class _FacultyCtaCard extends StatelessWidget {
   const _FacultyCtaCard();
-
-  @override
-  State<_FacultyCtaCard> createState() => _FacultyCtaCardState();
-}
-
-class _FacultyCtaCardState extends State<_FacultyCtaCard> {
-  bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
     final t = EceuhExtras.of(context);
     final scheme = Theme.of(context).colorScheme;
 
-    return AnimatedScale(
-      scale: _pressed ? 0.98 : 1.0,
-      duration: Motion.press,
-      curve: Curves.easeOut,
+    return PressScale(
+      borderRadius: BorderRadius.circular(Radii.xl),
+      onTap: () => context.push('/faculty'),
       child: Material(
         color: scheme.inverseSurface,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(Radii.xl),
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onHighlightChanged: (v) => setState(() => _pressed = v),
-          onTap: () => context.push('/faculty'),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 44, height: 44,
-                  decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.1), shape: BoxShape.circle),
-                  alignment: Alignment.center,
-                  child: Icon(Icons.groups_outlined, color: scheme.onInverseSurface),
+        child: Padding(
+          padding: const EdgeInsets.all(Spacing.s3),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 44, height: 44,
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.1), shape: BoxShape.circle),
+                alignment: Alignment.center,
+                child: Icon(Icons.groups_outlined, color: scheme.onInverseSurface),
+              ),
+              const SizedBox(height: Spacing.s2),
+              Text('Faculty Directory',
+                style: TextStyle(fontFamily: t.serif, fontSize: 20, fontWeight: FontWeight.w600, color: scheme.onInverseSurface)),
+              const SizedBox(height: 6),
+              Text('Browse ratings, difficulty, and reviews from real ECE students.',
+                style: TextStyle(color: scheme.onInverseSurface.withValues(alpha: 0.7), fontSize: 13, height: 1.5)),
+              const SizedBox(height: 18),
+              Container(
+                padding: const EdgeInsets.only(top: 14),
+                decoration: BoxDecoration(border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1)))),
+                child: Row(
+                  children: [
+                    Icon(Icons.star_rounded, color: t.goldStart, size: 18),
+                    const SizedBox(width: 8),
+                    Text('VIEW ALL PROFESSORS',
+                      style: TextStyle(fontFamily: t.sans, color: scheme.onInverseSurface, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                Text('Faculty Directory',
-                  style: TextStyle(fontFamily: t.serif, fontSize: 20, fontWeight: FontWeight.w600, color: scheme.onInverseSurface)),
-                const SizedBox(height: 6),
-                Text('Browse ratings, difficulty, and reviews from real ECE students.',
-                  style: TextStyle(color: scheme.onInverseSurface.withValues(alpha: 0.7), fontSize: 13, height: 1.5)),
-                const SizedBox(height: 18),
-                Container(
-                  padding: const EdgeInsets.only(top: 14),
-                  decoration: BoxDecoration(border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1)))),
-                  child: Row(
-                    children: [
-                      Icon(Icons.star_rounded, color: t.goldStart, size: 18),
-                      const SizedBox(width: 8),
-                      Text('VIEW ALL PROFESSORS',
-                        style: TextStyle(fontFamily: t.sans, color: scheme.onInverseSurface, fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.2)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -350,74 +323,61 @@ class _FacultyCtaCardState extends State<_FacultyCtaCard> {
   }
 }
 
-class _LibraryCard extends StatefulWidget {
+class _LibraryCard extends StatelessWidget {
   const _LibraryCard({required this.course});
   final Course course;
 
   @override
-  State<_LibraryCard> createState() => _LibraryCardState();
-}
-
-class _LibraryCardState extends State<_LibraryCard> {
-  bool _pressed = false;
-
-  @override
   Widget build(BuildContext context) {
     final t = EceuhExtras.of(context);
-    final hue = (widget.course.slug.hashCode % 360).toDouble();
+    final hue = (course.slug.hashCode % 360).toDouble();
 
-    return AnimatedScale(
-      scale: _pressed ? 0.95 : 1.0,
-      duration: Motion.press,
-      curve: Curves.easeOut,
+    return PressScale(
+      scale: 0.95,
+      borderRadius: BorderRadius.circular(Radii.lg),
+      onTap: () => context.push('/archives/course/${course.slug}'),
       child: SizedBox(
         width: 150,
-        child: Material(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onHighlightChanged: (v) => setState(() => _pressed = v),
-            onTap: () => context.push('/archives/course/${widget.course.slug}'),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                if (widget.course.art.startsWith('http'))
-                  Image.network(widget.course.art, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _CoverGradient(hue: hue))
-                else
-                  _CoverGradient(hue: hue),
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Colors.black.withValues(alpha: 0.75)],
-                        stops: const [0.4, 1],
-                      ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(Radii.lg),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (course.art.startsWith('http'))
+                Image.network(course.art, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _CoverGradient(hue: hue))
+              else
+                _CoverGradient(hue: hue),
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                      colors: [Colors.transparent, Colors.black.withValues(alpha: 0.75)],
+                      stops: const [0.4, 1],
                     ),
                   ),
                 ),
-                Positioned(
-                  left: 12, right: 12, bottom: 12,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(color: t.accent, borderRadius: BorderRadius.circular(999)),
-                        child: Text(widget.course.code,
-                          style: TextStyle(fontFamily: t.mono, color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1)),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(widget.course.displayArchiveTitle,
-                        maxLines: 2, overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontFamily: t.serif, color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600, height: 1.2)),
-                    ],
-                  ),
+              ),
+              Positioned(
+                left: 12, right: 12, bottom: 12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(color: t.accent, borderRadius: BorderRadius.circular(Radii.pill)),
+                      child: Text(course.code,
+                        style: TextStyle(fontFamily: t.mono, color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 1)),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(course.displayArchiveTitle,
+                      maxLines: 2, overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontFamily: t.serif, color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600, height: 1.2)),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
