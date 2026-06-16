@@ -69,21 +69,7 @@ class AppShell extends StatelessWidget {
           ),
         ],
       ),
-      body: AnimatedSwitcher(
-        duration: Motion.fast,
-        switchInCurve: Motion.decel,
-        switchOutCurve: Motion.accel,
-        layoutBuilder: (currentChild, previousChildren) => Stack(
-          fit: StackFit.expand,
-          children: [
-            ...previousChildren,
-            if (currentChild != null) currentChild,
-          ],
-        ),
-        transitionBuilder: (child, animation) =>
-            FadeTransition(opacity: animation, child: child),
-        child: KeyedSubtree(key: ValueKey(index), child: child),
-      ),
+      body: child,
       bottomNavigationBar: _PillNav(
         index: index,
         onSelect: (i) {
