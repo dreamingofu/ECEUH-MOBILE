@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../motion.dart';
 import '../services/share_service.dart';
 import '../services/theme_service.dart';
 import '../theme.dart';
@@ -17,7 +18,7 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends State<SettingsScreen> with SingleTickerProviderStateMixin {
   final _nameController = TextEditingController(text: 'Alex Cougar');
   final _emailController = TextEditingController(text: 'acougar@cougarnet.uh.edu');
   final _majorController = TextEditingController(text: 'Electrical & Computer Engineering');
@@ -27,11 +28,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _ratingAlerts = true;
   bool _securityAlerts = false;
 
+  late final AnimationController _ctrl;
+  late final List<Animation<double>> _a;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: Motion.enter)..forward();
+    _a = List.generate(5, (i) => Motion.stagger(_ctrl, i));
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
     _majorController.dispose();
+    _ctrl.dispose();
     super.dispose();
   }
 
@@ -65,160 +77,175 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: t.card,
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: t.border),
-              ),
-              child: Column(
-                children: [
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
-                        width: 96, height: 96,
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(shape: BoxShape.circle, gradient: goldGradient),
-                        child: Container(
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(shape: BoxShape.circle, color: scheme.surface),
-                          child: Icon(Icons.bolt, size: 40, color: t.accent),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: -2, right: -2,
-                        child: GestureDetector(
-                          onTap: _comingSoon,
+            FadeSlide(
+              animation: _a[0],
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: t.card,
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(color: t.border),
+                ),
+                child: Column(
+                  children: [
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 96, height: 96,
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(shape: BoxShape.circle, gradient: goldGradient),
                           child: Container(
-                            width: 30, height: 30,
                             alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: t.accent,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: t.card, width: 3),
-                            ),
-                            child: Icon(Icons.edit, size: 14, color: scheme.onPrimary),
+                            decoration: BoxDecoration(shape: BoxShape.circle, color: scheme.surface),
+                            child: Icon(Icons.bolt, size: 40, color: t.accent),
                           ),
                         ),
+                        Positioned(
+                          bottom: -2, right: -2,
+                          child: GestureDetector(
+                            onTap: _comingSoon,
+                            child: Container(
+                              width: 30, height: 30,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: t.accent,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: t.card, width: 3),
+                              ),
+                              child: Icon(Icons.edit, size: 14, color: scheme.onPrimary),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text('Alex Cougar', style: textTheme.headlineMedium),
+                    const SizedBox(height: 4),
+                    Text('Electrical & Computer Engineering',
+                        style: TextStyle(fontFamily: t.sans, color: t.textMuted, fontSize: 15)),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        _Badge(label: 'ECE Major', color: t.accent),
+                        _Badge(label: 'Class of 2027', color: scheme.secondary),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => ShareService.shareLink(
+                          title: 'ECEUH — UH ECE Coursework Archive',
+                          url: 'https://github.com/dreamingofu/eceuh',
+                        ),
+                        icon: const Icon(Icons.ios_share),
+                        label: const Text('Share App'),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Text('Alex Cougar', style: textTheme.headlineMedium),
-                  const SizedBox(height: 4),
-                  Text('Electrical & Computer Engineering',
-                      style: TextStyle(fontFamily: t.sans, color: t.textMuted, fontSize: 15)),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      _Badge(label: 'ECE Major', color: t.accent),
-                      _Badge(label: 'Class of 2027', color: scheme.secondary),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => ShareService.shareLink(
-                        title: 'ECEUH — UH ECE Coursework Archive',
-                        url: 'https://github.com/dreamingofu/eceuh',
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            FadeSlide(
+              animation: _a[1],
+              child: _SectionCard(
+                icon: Icons.badge_outlined,
+                title: 'Profile Details',
+                child: Column(
+                  children: [
+                    _LabeledField(label: 'Full Name', controller: _nameController),
+                    const SizedBox(height: 16),
+                    _LabeledField(label: 'Cougarnet Email', controller: _emailController, keyboardType: TextInputType.emailAddress),
+                    const SizedBox(height: 16),
+                    _LabeledField(label: 'Major / Track', controller: _majorController),
+                    const SizedBox(height: 16),
+                    _LabeledDropdown(
+                      label: 'Expected Graduation',
+                      value: _gradYear,
+                      items: const ['2026', '2027', '2028', '2029'],
+                      onChanged: (v) => setState(() => _gradYear = v),
+                    ),
+                    const SizedBox(height: 22),
+                    SizedBox(width: double.infinity, child: GoldButton(label: 'Save Changes', onTap: _saveProfile)),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            FadeSlide(
+              animation: _a[2],
+              child: _SectionCard(
+                icon: Icons.notifications_active_outlined,
+                title: 'Notifications',
+                child: Column(
+                  children: [
+                    _NotificationToggle(
+                      title: 'New File Uploads',
+                      subtitle: 'Get notified when new lecture files, worksheets, or exams are added to your courses.',
+                      value: _fileAlerts,
+                      onChanged: (v) => setState(() => _fileAlerts = v),
+                    ),
+                    _NotificationToggle(
+                      title: 'Faculty Rating Updates',
+                      subtitle: 'Updates when new ratings and reviews are posted to the Faculty Ledger.',
+                      value: _ratingAlerts,
+                      onChanged: (v) => setState(() => _ratingAlerts = v),
+                    ),
+                    _NotificationToggle(
+                      title: 'Security Alerts',
+                      subtitle: 'Notifications for sign-ins from a new device or browser.',
+                      value: _securityAlerts,
+                      onChanged: (v) => setState(() => _securityAlerts = v),
+                      isLast: true,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            FadeSlide(
+              animation: _a[3],
+              child: _SectionCard(
+                icon: Icons.palette_outlined,
+                title: 'Appearance',
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _ThemeOption(
+                        icon: Icons.light_mode_outlined,
+                        title: 'Crisp Gallery',
+                        subtitle: 'High-contrast light mode for daytime study.',
+                        selected: themeService.mode == ThemeMode.light,
+                        onTap: () => themeService.setMode(ThemeMode.light),
                       ),
-                      icon: const Icon(Icons.ios_share),
-                      label: const Text('Share App'),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            _SectionCard(
-              icon: Icons.badge_outlined,
-              title: 'Profile Details',
-              child: Column(
-                children: [
-                  _LabeledField(label: 'Full Name', controller: _nameController),
-                  const SizedBox(height: 16),
-                  _LabeledField(label: 'Cougarnet Email', controller: _emailController, keyboardType: TextInputType.emailAddress),
-                  const SizedBox(height: 16),
-                  _LabeledField(label: 'Major / Track', controller: _majorController),
-                  const SizedBox(height: 16),
-                  _LabeledDropdown(
-                    label: 'Expected Graduation',
-                    value: _gradYear,
-                    items: const ['2026', '2027', '2028', '2029'],
-                    onChanged: (v) => setState(() => _gradYear = v),
-                  ),
-                  const SizedBox(height: 22),
-                  SizedBox(width: double.infinity, child: GoldButton(label: 'Save Changes', onTap: _saveProfile)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            _SectionCard(
-              icon: Icons.notifications_active_outlined,
-              title: 'Notifications',
-              child: Column(
-                children: [
-                  _NotificationToggle(
-                    title: 'New File Uploads',
-                    subtitle: 'Get notified when new lecture files, worksheets, or exams are added to your courses.',
-                    value: _fileAlerts,
-                    onChanged: (v) => setState(() => _fileAlerts = v),
-                  ),
-                  _NotificationToggle(
-                    title: 'Faculty Rating Updates',
-                    subtitle: 'Updates when new ratings and reviews are posted to the Faculty Ledger.',
-                    value: _ratingAlerts,
-                    onChanged: (v) => setState(() => _ratingAlerts = v),
-                  ),
-                  _NotificationToggle(
-                    title: 'Security Alerts',
-                    subtitle: 'Notifications for sign-ins from a new device or browser.',
-                    value: _securityAlerts,
-                    onChanged: (v) => setState(() => _securityAlerts = v),
-                    isLast: true,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            _SectionCard(
-              icon: Icons.palette_outlined,
-              title: 'Appearance',
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _ThemeOption(
-                      icon: Icons.light_mode_outlined,
-                      title: 'Crisp Gallery',
-                      subtitle: 'High-contrast light mode for daytime study.',
-                      selected: themeService.mode == ThemeMode.light,
-                      onTap: () => themeService.setMode(ThemeMode.light),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _ThemeOption(
+                        icon: Icons.dark_mode_outlined,
+                        title: 'Deep Midnight',
+                        subtitle: 'Low-glare dark mode for late-night sessions.',
+                        selected: themeService.mode == ThemeMode.dark,
+                        onTap: () => themeService.setMode(ThemeMode.dark),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _ThemeOption(
-                      icon: Icons.dark_mode_outlined,
-                      title: 'Deep Midnight',
-                      subtitle: 'Low-glare dark mode for late-night sessions.',
-                      selected: themeService.mode == ThemeMode.dark,
-                      onTap: () => themeService.setMode(ThemeMode.dark),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
-            Center(
-              child: TextButton.icon(
-                onPressed: () => context.go('/sign-in'),
-                style: TextButton.styleFrom(foregroundColor: scheme.error),
-                icon: const Icon(Icons.logout),
-                label: const Text('Sign Out'),
+            FadeSlide(
+              animation: _a[4],
+              child: Center(
+                child: TextButton.icon(
+                  onPressed: () => context.go('/sign-in'),
+                  style: TextButton.styleFrom(foregroundColor: scheme.error),
+                  icon: const Icon(Icons.logout),
+                  label: const Text('Sign Out'),
+                ),
               ),
             ),
           ],
@@ -371,32 +398,43 @@ class _ThemeOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = EceuhExtras.of(context);
-    return Material(
-      color: selected ? t.accent.withValues(alpha: 0.10) : t.overlay,
-      shape: RoundedRectangleBorder(
+    return AnimatedContainer(
+      duration: Motion.fast,
+      curve: Motion.std,
+      decoration: BoxDecoration(
+        color: selected ? t.accent.withValues(alpha: 0.10) : t.overlay,
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: selected ? t.accent : t.border, width: selected ? 1.5 : 1),
+        border: Border.all(color: selected ? t.accent : t.border, width: selected ? 1.5 : 1),
       ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Icon(icon, color: t.accent, size: 26),
-                  if (selected) Icon(Icons.check_circle, color: t.accent, size: 20),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(title, style: TextStyle(fontFamily: t.serif, color: t.text, fontWeight: FontWeight.w700, fontSize: 14)),
-              const SizedBox(height: 4),
-              Text(subtitle, style: TextStyle(fontFamily: t.sans, color: t.textMuted, fontSize: 11.5, height: 1.4)),
-            ],
+      child: Material(
+        color: Colors.transparent,
+        clipBehavior: Clip.antiAlias,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Icon(icon, color: t.accent, size: 26),
+                    AnimatedOpacity(
+                      opacity: selected ? 1.0 : 0.0,
+                      duration: Motion.fast,
+                      curve: Motion.std,
+                      child: Icon(Icons.check_circle, color: t.accent, size: 20),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(title, style: TextStyle(fontFamily: t.serif, color: t.text, fontWeight: FontWeight.w700, fontSize: 14)),
+                const SizedBox(height: 4),
+                Text(subtitle, style: TextStyle(fontFamily: t.sans, color: t.textMuted, fontSize: 11.5, height: 1.4)),
+              ],
+            ),
           ),
         ),
       ),

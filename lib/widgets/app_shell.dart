@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../motion.dart';
 import 'more_sheet.dart';
 
 /// Bottom-nav scaffold. Wraps the three primary tabs (Home / Archives /
@@ -20,7 +21,14 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final index = _indexFor(context);
     return Scaffold(
-      body: child,
+      body: AnimatedSwitcher(
+        duration: Motion.fast,
+        switchInCurve: Motion.decel,
+        switchOutCurve: Motion.accel,
+        transitionBuilder: (child, animation) =>
+            FadeTransition(opacity: animation, child: child),
+        child: KeyedSubtree(key: ValueKey(index), child: child),
+      ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: index,
         onDestinationSelected: (i) {
