@@ -27,19 +27,19 @@ class PrivacyScreen extends StatelessWidget {
               code: 'PRIVACY',
             ),
             const SizedBox(height: 16),
-            _Section(title: 'Information We Collect', children: [
+            const _Section(title: 'Information We Collect', children: [
               'If you create an account we collect your email and a username — used solely to save your unit progress across devices. Anonymous usage stores nothing.',
             ]),
-            _Section(title: 'How We Use Your Information', children: [
+            const _Section(title: 'How We Use Your Information', children: [
               'We use it to identify your account and sync progress. No ads, no resale.',
             ]),
-            _Section(title: 'Third-Party Services', children: [
+            const _Section(title: 'Third-Party Services', children: [
               'Supabase handles auth and progress storage. Vercel Analytics counts page views anonymously. Cloudflare R2 serves PDFs.',
             ]),
-            _Section(title: 'Data Retention & Deletion', children: [
+            const _Section(title: 'Data Retention & Deletion', children: [
               'See the Delete Account page for the exact steps and timeline. All associated data is removed within 7 days of a deletion request.',
             ]),
-            _Section(title: 'Contact', children: ['Questions? Email mail@felipejmiranda.com.']),
+            const _Section(title: 'Contact', children: ['Questions? Email mail@felipejmiranda.com.']),
             const SizedBox(height: 24),
             OutlinedButton.icon(
               onPressed: () => launchUrl(Uri.parse('mailto:mail@felipejmiranda.com'),

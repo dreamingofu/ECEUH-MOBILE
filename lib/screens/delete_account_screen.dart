@@ -28,14 +28,14 @@ class DeleteAccountScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            _Card(title: 'What Gets Deleted', children: [
+            const _Card(title: 'What Gets Deleted', children: [
               'Your email address and username',
               'Your course progress across every unit',
               'Your sign-in session and credentials',
               'Any cached progress synced from previous devices',
             ]),
             const SizedBox(height: 12),
-            _Card(title: 'What Gets Kept', children: [
+            const _Card(title: 'What Gets Kept', children: [
               'Nothing personal. All data associated with your account is permanently deleted within 7 days of your request.',
             ]),
             const SizedBox(height: 12),
@@ -50,7 +50,7 @@ class DeleteAccountScreen extends StatelessWidget {
                 )),
               ),
             ),
-            _Step(num: 2, title: 'Confirmation',
+            const _Step(num: 2, title: 'Confirmation',
               body: 'Once we process the request, we will reply with confirmation that your record has been removed from the Supabase database.'),
           ],
         ),
