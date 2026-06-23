@@ -19,8 +19,9 @@ class AppShell extends StatelessWidget {
   int _indexFor(BuildContext context) {
     final loc = GoRouterState.of(context).uri.toString();
     if (loc.startsWith('/archives') || loc.startsWith('/course')) return 1;
-    if (loc.startsWith('/faculty')) return 2;
-    if (loc.startsWith('/settings')) return 3;
+    if (loc.startsWith('/clubs')) return 2;
+    if (loc.startsWith('/faculty')) return 3;
+    if (loc.startsWith('/settings')) return 4;
     return 0;
   }
 
@@ -80,8 +81,9 @@ class AppShell extends StatelessWidget {
           switch (i) {
             case 0: context.go('/home'); break;
             case 1: context.go('/archives'); break;
-            case 2: context.go('/faculty'); break;
-            case 3: context.go('/settings'); break;
+            case 2: context.go('/clubs'); break;
+            case 3: context.go('/faculty'); break;
+            case 4: context.go('/settings'); break;
           }
         },
       ),
@@ -130,6 +132,7 @@ class _PillNav extends StatelessWidget {
   static const _items = <(IconData, IconData, String)>[
     (Icons.school_outlined,    Icons.school,    'Academy'),
     (Icons.biotech_outlined,   Icons.biotech,   'Research'),
+    (Icons.groups_outlined,    Icons.groups,    'Clubs'),
     (Icons.bar_chart_outlined, Icons.bar_chart, 'Ratings'),
     (Icons.person_outline,     Icons.person,    'Account'),
   ];
