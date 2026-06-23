@@ -4,8 +4,10 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../data/professors.dart';
+import '../design/tokens.dart';
 import '../models/professor.dart';
 import '../theme.dart';
+import 'glass/glass_card.dart';
 
 /// Animated rotating spotlight of randomly picked rated professors.
 /// 1:1 spirit-port of the Faculty Ledger card on the homepage.
@@ -23,7 +25,6 @@ class _FacultyLedgerState extends State<FacultyLedger> with SingleTickerProvider
   late final AnimationController _ringSpinController;
   Timer? _timer;
   int _index = 0;
-  double _displayedScore = 0;
 
   @override
   void initState() {
@@ -31,7 +32,6 @@ class _FacultyLedgerState extends State<FacultyLedger> with SingleTickerProvider
     _pool = _buildPool()..shuffle();
     _ringSpinController = AnimationController(vsync: this, duration: const Duration(seconds: 5))..repeat();
     if (_pool.isNotEmpty) {
-      _displayedScore = _pool[0].overall;
       _timer = Timer.periodic(_kCycleDuration, (_) => _advance());
     }
   }
@@ -46,7 +46,6 @@ class _FacultyLedgerState extends State<FacultyLedger> with SingleTickerProvider
   void _advance() {
     setState(() {
       _index = (_index + 1) % _pool.length;
-      _displayedScore = _pool[_index].overall;
     });
   }
 
@@ -93,13 +92,10 @@ class _FacultyLedgerState extends State<FacultyLedger> with SingleTickerProvider
       return const SizedBox.shrink();
     }
     final spot = _pool[_index];
-    return Container(
+    return GlassCard(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: t.card,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: t.border),
-      ),
+      radius: Radii.lg,
+      elevation: AppElevation.soft,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

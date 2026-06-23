@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../design/tokens.dart';
 import '../services/theme_service.dart';
 import '../theme.dart';
 
@@ -11,7 +12,6 @@ class MoreSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = EceuhExtras.of(context);
     final theme = context.watch<ThemeService>();
     return SafeArea(
       top: false,
@@ -23,6 +23,8 @@ class MoreSheet extends StatelessWidget {
           children: [
             Text('More', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 14),
+            _MoreItem(icon: Icons.settings_outlined, title: 'Settings', subtitle: 'Profile, notifications, appearance',
+              onTap: () { Navigator.pop(context); context.push('/settings'); }),
             _MoreItem(icon: Icons.shield_outlined, title: 'Privacy Policy', subtitle: 'What we collect and why',
               onTap: () { Navigator.pop(context); context.push('/privacy'); }),
             _MoreItem(icon: Icons.delete_outline, title: 'Delete Account', subtitle: 'Remove your data in 7 days',
@@ -68,7 +70,7 @@ class _MoreItem extends StatelessWidget {
                 width: 36, height: 36,
                 decoration: BoxDecoration(
                   color: t.accent.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(Radii.sm + 2),
                 ),
                 child: Icon(icon, size: 18, color: t.accent),
               ),

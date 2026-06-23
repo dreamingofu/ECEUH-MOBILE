@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../design/tokens.dart';
 import '../theme.dart';
+import 'glass/glass_card.dart';
 
-/// Standard hero used at the top of most screens. Mirrors the .hero-card
-/// pattern from course-pages.css.
 class HeroCard extends StatelessWidget {
   const HeroCard({
     super.key,
@@ -23,14 +23,10 @@ class HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = EceuhExtras.of(context);
-    return Container(
-      width: double.infinity,
+    return GlassCard(
       padding: const EdgeInsets.fromLTRB(22, 22, 22, 24),
-      decoration: BoxDecoration(
-        color: t.overlay,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: t.border),
-      ),
+      radius: Radii.lg,
+      elevation: AppElevation.soft,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -61,7 +57,7 @@ class HeroCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: t.accent.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(999),
+                    borderRadius: BorderRadius.circular(Radii.pill),
                   ),
                   child: Text(code!, style: TextStyle(fontFamily: t.mono, color: t.accent, fontWeight: FontWeight.w700, fontSize: 11, letterSpacing: 1.2)),
                 ),

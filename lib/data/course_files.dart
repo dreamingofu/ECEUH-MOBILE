@@ -6,7 +6,6 @@ import '../models/file_entry.dart';
 class _R2 {
   static const dld = 'https://pub-8a57ce7900574340969d1b3eb5bcdc1e.r2.dev/dld';
   static const c2  = 'https://pub-8a57ce7900574340969d1b3eb5bcdc1e.r2.dev/circuits%20II';
-  static const cp  = 'https://pub-8a57ce7900574340969d1b3eb5bcdc1e.r2.dev/cprog';
 }
 
 const Map<String, List<FileEntry>> kCourseFiles = {

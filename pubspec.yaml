@@ -5,7 +5,7 @@ version: 1.0.0+1
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
-  flutter: '>=3.22.0'
+  flutter: '>=3.27.0'
 
 dependencies:
   flutter:
@@ -24,6 +24,9 @@ dependencies:
   # Networking + downloads
   dio: ^5.4.3+1
   path_provider: ^2.1.3
+
+  # Fonts
+  google_fonts: ^6.2.1
 
   # Native integrations
   share_plus: ^9.0.0
