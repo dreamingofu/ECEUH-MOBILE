@@ -11,6 +11,8 @@ import 'screens/external_links_screen.dart';
 import 'screens/privacy_screen.dart';
 import 'screens/delete_account_screen.dart';
 import 'screens/preview_screen.dart';
+import 'screens/clubs_screen.dart';
+import 'screens/club_detail_screen.dart';
 import 'screens/sign_in_screen.dart';
 import 'screens/settings_screen.dart';
 
@@ -54,6 +56,18 @@ final appRouter = GoRouter(
                   pageBuilder: (c, s) => MaterialPage(child: ExternalLinksScreen(slug: s.pathParameters['slug']!)),
                 ),
               ],
+            ),
+          ],
+        ),
+        GoRoute(
+          path: '/clubs',
+          name: 'clubs',
+          pageBuilder: (c, s) => const NoTransitionPage(child: ClubsScreen()),
+          routes: [
+            GoRoute(
+              path: ':slug',
+              name: 'club',
+              pageBuilder: (c, s) => MaterialPage(child: ClubDetailScreen(slug: s.pathParameters['slug']!)),
             ),
           ],
         ),
